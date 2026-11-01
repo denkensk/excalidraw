@@ -22,6 +22,8 @@ import { getFormValue } from "../actions/actionProperties";
 import { useTextEditorFocus } from "../hooks/useTextEditorFocus";
 
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
+// ExcalidrawZ: match width / height / size
+import { MatchSizeButtons } from "../actions/excalidrawZMatchSize";
 
 import "./Actions.scss";
 
@@ -117,6 +119,8 @@ const AlignFieldset = ({
           {renderAction("alignBottom")}
           {showDistribute && renderAction("distributeVertically")}
         </div>
+        {/* ExcalidrawZ: match width / height / size */}
+        <MatchSizeButtons renderAction={renderAction} />
       </div>
     </fieldset>
   );

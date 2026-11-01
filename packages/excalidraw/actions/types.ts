@@ -114,6 +114,10 @@ export type ActionName =
   | "alignHorizontallyCentered"
   | "distributeHorizontally"
   | "distributeVertically"
+  // ExcalidrawZ: match width / height / size (excalidrawZMatchSize.tsx)
+  | "matchWidth"
+  | "matchHeight"
+  | "matchSize"
   | "flipHorizontal"
   | "flipVertical"
   | "deselect"

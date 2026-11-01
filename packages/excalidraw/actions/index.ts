@@ -67,6 +67,13 @@ export {
   distributeVertically,
 } from "./actionDistribute";
 
+// ExcalidrawZ: match width / height / size (a row under the align buttons)
+export {
+  actionMatchWidth,
+  actionMatchHeight,
+  actionMatchSize,
+} from "./excalidrawZMatchSize";
+
 export { actionFlipHorizontal, actionFlipVertical } from "./actionFlip";
 
 export {
