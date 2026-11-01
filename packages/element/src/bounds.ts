@@ -53,6 +53,10 @@ import {
 } from "./utils";
 import { intersectElementWithLineSegment } from "./collision";
 import { elementOverlapsWithFrame, getContainingFrame } from "./frame";
+import {
+  EXCALIDRAWZ_ARROW_ARROWHEAD_ANGLE,
+  EXCALIDRAWZ_ARROW_ARROWHEAD_SIZE,
+} from "./excalidrawZArrowheads";
 
 import type { Drawable, Op } from "roughjs/bin/core";
 import type { Point as RoughPoint } from "roughjs/bin/geometry";
@@ -727,7 +731,8 @@ export const CARDINALITY_ZERO_CIRCLE_SCALE = 0.8;
 export const getArrowheadSize = (arrowhead: Arrowhead): number => {
   switch (arrowhead) {
     case "arrow":
-      return 25;
+      // ExcalidrawZ: shorter arrowheads (upstream: 25)
+      return EXCALIDRAWZ_ARROW_ARROWHEAD_SIZE;
     case "diamond":
     case "diamond_outline":
       return 12;
@@ -744,7 +749,8 @@ export const getArrowheadSize = (arrowhead: Arrowhead): number => {
   }
 };
 
-const ARROW_ARROWHEAD_ANGLE = 20;
+// ExcalidrawZ: wider, to go with the shorter arrowheads (upstream: 20)
+const ARROW_ARROWHEAD_ANGLE = EXCALIDRAWZ_ARROW_ARROWHEAD_ANGLE;
 // scaled down `arrow` arrowheads open up to this angle so that they don't
 // collapse into the line, reaching it at ARROW_ARROWHEAD_WIDEST_SIZE
 const ARROW_ARROWHEAD_WIDEST_ANGLE = 30;
