@@ -73,6 +73,8 @@ import {
   actionZoomOut,
 } from "../actions/actionCanvas";
 
+import { createTextColorEditor } from "./textColorEditor";
+
 import type { ParsedDataTranferList } from "../clipboard";
 
 import type App from "../components/App";
@@ -264,8 +266,13 @@ export const textWysiwyg = ({
    *
    * Note: `text`, which can be wrapped and therefore different from `originalText`,
    *       is derived from `originalText`
+   *
+   * `textColorsUpdate` keeps ExcalidrawZ's colored ranges on the new text.
    */
-  onChange?: (nextOriginalText: string) => void;
+  onChange?: (
+    nextOriginalText: string,
+    textColorsUpdate: Pick<ExcalidrawTextElement, "customData"> | null,
+  ) => void;
   onSubmit: (data: { viaKeyboard: boolean; nextOriginalText: string }) => void;
   getViewportCoords: (x: number, y: number) => [number, number];
   element: ExcalidrawTextElement;
@@ -565,6 +572,9 @@ export const textWysiwyg = ({
   editable.value = element.originalText;
   updateWysiwygStyle();
 
+  // ExcalidrawZ: colored parts of the text
+  const textColors = createTextColorEditor({ app, element, editable });
+
   const getCaretIndexFromInitialSceneCoords = () => {
     if (!initialCaretSceneCoords || !currentTextLayout) {
       return null;
@@ -856,7 +866,7 @@ export const textWysiwyg = ({
         editable.selectionStart = selectionStart;
         editable.selectionEnd = selectionStart;
       }
-      onChange(editable.value);
+      onChange(editable.value, textColors.getEditUpdate());
       // once the update, and any scroll it made (see
       // AppText.handleTextWysiwyg), is in the app's state
       queueMicrotask(followCaretFromUnderPanels);
@@ -864,6 +874,9 @@ export const textWysiwyg = ({
   }
 
   editable.onkeydown = (event) => {
+    if (textColors.handleKeyDown(event)) {
+      return;
+    }
     if (!event.shiftKey && actionZoomIn.keyTest(event)) {
       event.preventDefault();
       app.actionManager.executeAction(actionZoomIn);
@@ -1109,6 +1122,7 @@ export const textWysiwyg = ({
     editorBox?.style.removeProperty("left");
     editorBox?.style.removeProperty("right");
 
+    textColors.destroy();
     editable.remove();
   };
 
@@ -1324,6 +1338,7 @@ export const textWysiwyg = ({
   });
   ownerWindow.addEventListener("beforeunload", handleSubmit);
   editorBox!.appendChild(editable);
+  textColors.mount();
 
   return handleSubmit;
 };

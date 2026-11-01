@@ -72,6 +72,11 @@ import {
 } from "@excalidraw/element";
 
 import {
+  getClearTextColorsUpdate,
+  getColorTextRangeUpdate,
+} from "@excalidraw/element";
+
+import {
   updateElbowArrowPoints,
   CaptureUpdateAction,
   toggleLinePolygonState,
@@ -171,6 +176,8 @@ import {
 } from "../hooks/useTextEditorFocus";
 
 import { getShortcutKey } from "../shortcut";
+
+import { getTextEditorSelection } from "../wysiwyg/textColorEditor";
 
 import {
   getColorTargetAppStateUpdates,
@@ -367,7 +374,7 @@ export const actionChangeStrokeColor = register<
   name: "changeStrokeColor",
   label: "labels.stroke",
   trackEvent: false,
-  perform: (elements, appState, value) => {
+  perform: (elements, appState, value, app) => {
     const { color, ...appStateUpdates } = value ?? {};
     if (color === undefined) {
       return {
@@ -375,6 +382,31 @@ export const actionChangeStrokeColor = register<
         captureUpdate: CaptureUpdateAction.EVENTUALLY,
       };
     }
+
+    // ExcalidrawZ: with part of the edited text selected, color only that part
+    const editingText = appState.editingTextElement;
+    const textSelection =
+      editingText && getTextEditorSelection(app, editingText.id);
+    if (editingText && textSelection) {
+      return {
+        elements: elements.map((el) =>
+          el.id === editingText.id && isTextElement(el)
+            ? newElementWith(
+                el,
+                getColorTextRangeUpdate(
+                  el,
+                  textSelection.start,
+                  textSelection.end,
+                  color,
+                ),
+              )
+            : el,
+        ),
+        appState: { ...appState, ...appStateUpdates },
+        captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+      };
+    }
+
     // resolved from the state the action runs against — never from the
     // render-time closure of the memoized picker (see `resolveColorTarget`)
     const target = resolveColorTarget(appState, elements, "strokeColor");
@@ -389,10 +421,11 @@ export const actionChangeStrokeColor = register<
           appState,
           (el) =>
             hasStrokeColor(el.type)
-              ? newElementWith(
-                  el,
-                  getColorUpdate(el, "strokeColor", color, elementsMap),
-                )
+              ? newElementWith(el, {
+                  ...getColorUpdate(el, "strokeColor", color, elementsMap),
+                  // ExcalidrawZ: colored parts of a text take the new color
+                  ...getClearTextColorsUpdate(el),
+                })
               : el,
           true,
         ),

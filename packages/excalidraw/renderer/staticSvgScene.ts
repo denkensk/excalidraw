@@ -19,6 +19,7 @@ import { normalizeLink, toValidURL } from "@excalidraw/common";
 import { hashString } from "@excalidraw/element";
 import { getUncroppedWidthAndHeight } from "@excalidraw/element";
 import { shouldApplyExcalidrawZMathColorFilter } from "@excalidraw/element";
+import { appendTextColorSpans, getTextColorLines } from "@excalidraw/element";
 import {
   createPlaceholderEmbeddableLabel,
   getEmbedLink,
@@ -848,9 +849,19 @@ const renderElementToSvg = (
             : element.textAlign === "right" || direction === "rtl"
             ? "end"
             : "start";
+        // ExcalidrawZ: parts of the text in their own colors
+        const colorLines = getTextColorLines(element);
         for (let i = 0; i < lines.length; i++) {
           const text = svgRoot.ownerDocument.createElementNS(SVG_NS, "text");
-          text.textContent = lines[i];
+          if (colorLines) {
+            appendTextColorSpans(
+              text,
+              colorLines[i],
+              renderConfig.theme === THEME.DARK,
+            );
+          } else {
+            text.textContent = lines[i];
+          }
           text.setAttribute("x", `${horizontalOffset}`);
           text.setAttribute("y", `${i * lineHeightPx + verticalOffset}`);
           text.setAttribute("font-family", getFontFamilyString(element));

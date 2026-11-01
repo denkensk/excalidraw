@@ -74,6 +74,7 @@ import {
 import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
 import { shouldApplyExcalidrawZMathColorFilter } from "./excalidrawZ";
+import { fillTextColorLine, getTextColorLines } from "./excalidrawZTextColors";
 
 import { ShapeCache } from "./shape";
 import {
@@ -820,12 +821,26 @@ const drawElementOnCanvas = (
             lineHeightPx,
           );
 
+          // ExcalidrawZ: parts of the text in their own colors
+          const colorLines = getTextColorLines(element);
+
           for (let index = 0; index < lines.length; index++) {
-            context.fillText(
-              lines[index],
-              horizontalOffset,
-              index * lineHeightPx + verticalOffset,
-            );
+            const y = index * lineHeightPx + verticalOffset;
+            if (colorLines) {
+              fillTextColorLine(
+                context,
+                colorLines[index],
+                horizontalOffset,
+                y,
+                {
+                  textAlign: element.textAlign,
+                  baseColor: element.strokeColor,
+                  isDarkMode: renderConfig.theme === THEME.DARK,
+                },
+              );
+            } else {
+              context.fillText(lines[index], horizontalOffset, y);
+            }
           }
         });
         if (shouldTemporarilyAttach) {

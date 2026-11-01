@@ -184,7 +184,12 @@ export class AppText {
   ) {
     const elementsMap = this.app.scene.getElementsMapIncludingDeleted();
 
-    const updateElement = (nextOriginalText: string, isDeleted: boolean) => {
+    const updateElement = (
+      nextOriginalText: string,
+      isDeleted: boolean,
+      // ExcalidrawZ: the colored ranges, kept on the text as it's edited
+      textColorsUpdate: Pick<ExcalidrawTextElement, "customData"> | null = null,
+    ) => {
       const latestTextElement =
         this.app.scene.getElement<ExcalidrawTextElement>(element.id);
 
@@ -223,6 +228,7 @@ export class AppText {
             return newElementWith(_element, {
               originalText: nextOriginalText,
               isDeleted: isDeleted ?? _element.isDeleted,
+              ...textColorsUpdate,
               ...(stickyLayout?.text ??
                 // returns (wrapped) text and new dimensions
                 refreshTextDimensions(
@@ -291,12 +297,14 @@ export class AppText {
           viewportY - this.app.state.offsetTop,
         ];
       },
-      onChange: withBatchedUpdates((nextOriginalText) => {
-        updateElement(nextOriginalText, false);
-        if (isNonDeletedElement(element)) {
-          updateBoundElements(element, this.app.scene);
-        }
-      }),
+      // (batched in a closure: withBatchedUpdates passes on a single argument)
+      onChange: (nextOriginalText, textColorsUpdate) =>
+        withBatchedUpdates(() => {
+          updateElement(nextOriginalText, false, textColorsUpdate);
+          if (isNonDeletedElement(element)) {
+            updateBoundElements(element, this.app.scene);
+          }
+        })(),
       onSubmit: withBatchedUpdates(({ viaKeyboard, nextOriginalText }) => {
         this.textWysiwygSubmitHandler = null;
 

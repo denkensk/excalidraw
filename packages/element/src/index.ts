@@ -81,6 +81,7 @@ export * from "./groups";
 export * from "./heading";
 export * from "./image";
 export * from "./excalidrawZ";
+export * from "./excalidrawZTextColors";
 export * from "./linearElementEditor";
 export * from "./listMarker";
 export * from "./mutateElement";
